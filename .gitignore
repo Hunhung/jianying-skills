@@ -1,11 +1,13 @@
-# 只跟踪两个剪映 skill，其余 skill 目录全部排除
+# 只跟踪通用版剪映 skill，其余 skill 目录全部排除
 *
 !.gitignore
 !README.md
 !jianying-editor/
-!jianying-editor-hd-fancam/
 !jianying-editor/**
-!jianying-editor-hd-fancam/**
+# 专用版暂不上传，本地只留占位说明
+!jianying-editor-hd-fancam/
+jianying-editor-hd-fancam/*
+!jianying-editor-hd-fancam/README.md
 
 # 通用运行时垃圾
 __pycache__/
