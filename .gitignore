@@ -1,0 +1,14 @@
+# 只跟踪两个剪映 skill，其余 skill 目录全部排除
+*
+!.gitignore
+!README.md
+!jianying-editor/
+!jianying-editor-hd-fancam/
+!jianying-editor/**
+!jianying-editor-hd-fancam/**
+
+# 通用运行时垃圾
+__pycache__/
+*.pyc
+*.log
+.DS_Store
