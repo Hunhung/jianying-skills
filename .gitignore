@@ -4,10 +4,9 @@
 !README.md
 !jianying-editor/
 !jianying-editor/**
-# 专用版暂不上传，本地只留占位说明
+# 专用版（精简定稿后已上传）
 !jianying-editor-hd-fancam/
-jianying-editor-hd-fancam/*
-!jianying-editor-hd-fancam/README.md
+!jianying-editor-hd-fancam/**
 
 # 通用运行时垃圾
 __pycache__/
