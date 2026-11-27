@@ -39,7 +39,7 @@ For generic editing requests, always follow the "Quick Edit Runtime Template" an
     - 还要写：`draft_settings`（`[General]`，`real_edit_keys` 不能为 0）、
       `attachment_pc_common.json`（`recognize_tasks`，歌词识别入口）、
       `attachment_editing.json`、`draft_agency_config.json`、`timeline_layout.json`。
-    - 工具实现：用户项目 `scripts/jy_sidecar.py`。
+    - 工具实现：`scripts/jy_sidecar.py`（2026-11-27 从本地项目收进本仓库，之前只在用户项目里，clone 下来找不到）。
 
 0c. **素材字段要补 + 必须校验零悬空**
     - pyJianYingDraft 写出的视频素材缺 `stable`（**防抖在这里**）、`matting`、
@@ -49,7 +49,7 @@ For generic editing requests, always follow the "Quick Edit Runtime Template" an
       100% 悬空 → 补一个 `{"id": <ref>, "type": "sticker_animation", "animations": []}` 空壳。
     - **`materials.effects` 被调节参数和滤镜素材共用** → 后写覆盖先写。
       顺序必须是**先调节、后滤镜**，否则 `material_id` 悬空、滤镜轨空。
-    - 工具实现：用户项目 `scripts/jy_material_port.py`。
+    - 工具实现：`scripts/jy_material_port.py`（同上，已随仓库提供）。
 
 1.  **脚本位置**：**禁止在 Skill 内部目录创建剪辑脚本**。所有的剪辑逻辑实现代码（`.py` 脚本）必须存放在用户当前项目的**根目录**（或子目录，如 `scripts/`），以保持 Skill 库的纯净和可移植性。
 2.  **版本与架构**：

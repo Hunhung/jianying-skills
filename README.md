@@ -7,8 +7,7 @@
 | 目录 | 状态 | 说明 |
 |---|---|---|
 | `jianying-editor` | 已上传 | 通用版：旅游素材混剪、一次性剪辑、多素材整合 |
-
-高清直拍专用版（`jianying-editor-hd-fancam`）还在调整中，暂不上传。
+| `jianying-editor-hd-fancam` | 已上传 | 高清直拍专用版：固定规格、4K 竖屏流程 |
 
 ## 通用版包含什么
 
@@ -21,4 +20,15 @@
 - 画布宽高显式传入、旋转/scale 适配规则
 - 无 ffprobe 时的安全跳过
 
+## 2026-11-27 补的两个脚本
+
+`scripts/jy_sidecar.py`、`scripts/jy_material_port.py` 之前只存在用户项目目录里，
+`SKILL.md` 却直接引用了它们——clone 下来是找不到的。现在已随仓库提供：
+
+| 脚本 | 解决什么 |
+|---|---|
+| `scripts/jy_sidecar.py` | 补齐侧车文件 + `key_value.json` 资源登记，**「滤镜轨为空」就是这里没登记** |
+| `scripts/jy_material_port.py` | 素材字段补齐（防抖 `stable`、`matting`、`extra_type_option`），并校验零悬空 |
+
 CSV 素材库来自原版，不含本机私人路径。上游 LICENSE 与致谢保留。
+

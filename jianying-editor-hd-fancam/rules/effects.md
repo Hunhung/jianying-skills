@@ -67,7 +67,7 @@ python <SKILL_ROOT>/scripts/asset_search.py "故障" -c video_scene_effects --js
 
 ## 2. 调节（调色，如「锐化」）
 
-挂在 **`type = "adjust"` 的独立轨道**上。片段 `material_id` 指向一条
+挂在 **`type = "mixed"` 的独立轨道**上（⚠️ **2026-11-27 实测确认**：本机 4 个明文草稿的调节轨 `type` 一律是 `mixed`，`adjust` 是错的，别写）。片段 `material_id` 指向一条
 `materials.placeholders` 记录，各参数经 `extra_material_refs` 逐个引用
 `materials.effects`，另有一条 `materials.hsl`。
 
@@ -82,6 +82,7 @@ temperature, tone, light_sensation, vignetting
   与同一 `path`，靠 `type` 区分、靠 `value` 取 0~1。
 - **锐化 50 → `value = 0.5`**；实测样本 `sharpen = 0.0531` 对应 UI 约 5。
 - `placeholders` 记录：`{"id": "<UUID>", "type": "adjust", "name": "调整1", "material_resource_id": ""}`。
+  - ⚠️ 2026-11-27 实测：剪映 11.x 明文草稿里 `placeholders` 是**空数组**，调节素材实际落在 `materials.videos` 里（带 `enable_adjust` / `enable_color_curves` 等 flag）。上面的 placeholders 写法属旧版结构，11.x 需按 videos 结构处理，写之前先用 `draft_inspector.py show` 看真实草稿。
 - 实测真草稿里 `materials.hsl[].constant_material_id` 是悬空引用，可省略。
 
 ## 3. 资源不必预下载，但**必须登记进 `key_value.json`**

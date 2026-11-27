@@ -24,6 +24,21 @@ Use this skill when the user wants to produce his fixed-format "高清直拍" vi
 
 图例：【🤖 skill】= 生成草稿自动完成　【👤 人工】= 你在剪映 / AE 里手动做
 
+### ⚠️ 文档提到但代码里不存在的脚本（2026-11-27 核实，照抄会报错）
+
+以下脚本在 SKILL.md / rules / docs 里被引用，但 `scripts/` 目录下**没有对应文件**。看到名字不要直接 import，先 `ls scripts/` 确认。
+
+| 脚本 | 文档声称的作用 | 现状 | 现在该用什么 |
+|---|---|---|---|
+| `jy_sidecar.py` | 侧车生成 + key_value 登记 | 不存在 | 未实现，需按 `rules/draft_storage.md` 手写 |
+| `jy_material_port.py` | 素材搬运 | 不存在 | 用 `core/media_ops.py` 的 `add_media_safe` |
+| `asset_search.py` | 素材搜索 | 不存在 | 直接查 `data/*.csv` |
+| `auto_exporter.py` | 无头自动导出 | 不存在 | 剪映 11.x 无 UIA 树，只能人工或模拟点击 |
+| `api_validator.py` | 接口校验 | 不存在 | 用 `scripts/draft_inspector.py` |
+| `beat_detect.py` | 卡点检测 | 不存在 | 未实现 |
+
+**主线缺口**：`jy_sidecar.py`（滤镜不渲染的根因就在这）和 `auto_exporter.py`（批量导出的最后一步）是 L3/L4 的必需件，做批量前必须先补这两个。
+
 **第一段 · 剪映粗剪（产出给 AE 的中间片）**
 1. 【🤖】导入 R7 4K60p 素材，画布设 9:16
 2. 【👤】识别歌词（剪映 AI 实时字幕，skill 调不动）
@@ -38,14 +53,14 @@ Use this skill when the user wants to produce his fixed-format "高清直拍" vi
 
 **第三段 · 剪映精修（🤖 主战场）**
 7. 【🤖】把 AE 稳定片导入草稿
-8. 【👤 / 存疑】防抖「裁切最少」——剪映防抖疑似实时处理，默认按人工处理；若能写成草稿参数再改回 🤖（原 `stable_level = 3` 作废）
+8. 【👤】防抖「裁切最少」——**已定稿（2026-11-27 用户确认，以此为准）**：稳定主要靠第二段的 AE 变形稳定器（Warp Stabilizer）；剪映这一步只开防抖「**裁切最少**」做轻量收尾。剪映防抖是实时处理，草稿层写不进去，必须人工。原 `stable_level = 3` 作废，不要再写。
 9. 【🤖】滤镜：**高清增强 80**
 10. 【👤】调节：锐化 **50** 由 skill 写死，其余参数用户自己调
 11. 【👤】关键帧微调画面大小与位置（细微调整，用户手动）
 12. 字幕（⚠️ 有前置依赖，见下方专节）：
     - 【👤/🤖】**先要有歌词内容**——skill 不会识别歌词，必须在剪映用【歌词识别】拿到文本，导出 SRT 交给 skill `import_srt`
     - 【🤖】套样式：放**左上、留安全边距（不贴边）**；动画「渐显」入场 +「渐隐」出场；**阴影** 黑色 / 不透明度 40 / 模糊度 4 / 距离 2 / 角度 -45
-    - 【👤】**竖排**存疑：底层 `add_text_simple` 未见竖排方向参数，若代码不支持则竖排须在剪映手动改
+    - 【👤】**竖排**：**已定稿（2026-11-27 用户确认）**——底层 `add_text_simple` 没有竖排方向参数，竖排一律在剪映手动改，skill 不尝试写、也不要假装能写
 13. 【👤 + 🤖】音频：声音分离（剪映 AI）人工做；音量 人声 **+3.0** / 背景音乐 **-1.0** 由 skill 写
 14. 【🤖】复制视频轨，紧贴原轨上方 → 创建复合片段 → 特效【模糊 20】
 15. 【🤖】文字蒙版：文字 **HuHu**，字体 **ZY INNOCENT**，不加粗 / 无下划线 / 斜体，字号 **23**，位置 **x 0 / y -2534**；蒙版阴影 不透明度 **40** / 模糊度 **3** / 距离 **1** / 角度 **-45**（⚠️ 与第 12 步字幕阴影是两套不同参数，别混）
@@ -56,8 +71,9 @@ Use this skill when the user wants to produce his fixed-format "高清直拍" vi
 skill **不会识别歌词**（全项目无 ASR/歌词识别能力），它只能拿现成字幕文本套样式。所以字幕这一步的正确顺序是：
 
 1. 【👤】在剪映第一段用【歌词识别】拿到歌词 → 导出 SRT 文件
-2. 【🤖】skill 用 `import_srt(path, track_name="Subtitles")` 把 SRT 导进草稿 → 再加渐显/渐隐动画、阴影、位置
-3. 【👤】竖排若在代码层不支持，在剪映手动改
+2. 【🤖】skill 用 `project.script.import_srt(path, track_name="Subtitles")` 把 SRT 导进草稿 → 再加渐显/渐隐动画、阴影、位置
+   - ⚠️ **2026-11-27 修正**：`import_srt` 只定义在 `pyJianYingDraft.ScriptFile` 上，`JyProject` 和四个 Mixin 都没有转发。写成 `project.import_srt(...)` 会抛 `AttributeError`，必须走 `project.script.import_srt(...)`
+3. 【👤】竖排在剪映手动改（代码层不支持，已确认，不要尝试）
 
 ⚠️ 时间轴对齐：第一段识别的歌词时间戳基于**原始片段**，AE 稳定后视频时长通常不变，SRT 可直接用；若 AE 改了时长需重新对齐。
 
@@ -67,7 +83,7 @@ skill **不会识别歌词**（全项目无 ASR/歌词识别能力），它只�
 - 只需告诉我这个文件夹路径，我自动识别这两个文件，不用分别给路径
 - 默认交接目录：`C:\Users\你的用户名\WorkBuddy\spaces\2026_11_25_08-23-45\handoff`
 
-**一句话总结用法**：你做完粗剪（含歌词识别导出 SRT）和 AE，把「稳定片 mp4 + 歌词 SRT」放进同一个文件夹，只把文件夹路径丢给 skill → skill 生成搭好滤镜/调节/字幕样式/模糊/HuHu 蒙版的草稿 → 你在剪映打开草稿，补竖排（如需）、声音分离和动态调参 → 自己导出。无片头片尾、无额外 BGM、无卡点，原汁原味一段视频。
+**一句话总结用法**：你做完粗剪（含歌词识别导出 SRT）和 AE，把「稳定片 mp4 + 歌词 SRT」放进同一个文件夹，只把文件夹路径丢给 skill → skill 生成搭好滤镜/调节/字幕样式/模糊/HuHu 蒙版的草稿 → 你在剪映打开草稿，开防抖「裁切最少」、补竖排字幕、做声音分离和动态调参 → 自己导出。无片头片尾、无额外 BGM、无卡点，原汁原味一段视频。
 
 ### ⚠️ SVIP 依赖（用户已开通剪映 SVIP）
 
@@ -164,8 +180,9 @@ For generic editing requests, always follow the "Quick Edit Runtime Template" an
       `if not self._explicit_res: self.script.width, self.script.height = mat.width, mat.height`。
       而 `_explicit_res = (width != 1920 or height != 1080)`。
       **想得到竖屏/非 1080p 画布，必须在 `JyProject(...)` 显式传入宽高**，否则 1920x1080 会被素材比例顶掉。
-    - **`add_media_safe` 依赖系统 `ffprobe`**（用于 `media_normalizer`）。若 PATH 中没有 ffprobe，
-      已修复为安全跳过探测；否则历史版本会直接抛 `FileNotFoundError`。
+    - **`add_media_safe` 依赖系统 `ffprobe`**（用于 `media_normalizer`）。**本机 2026-11-27 已补齐**
+      `E:\Program Files\ffmpeg\bin\ffprobe.exe`（9.1-essentials）。代码本身也做了安全跳过：探测失败返回 `{}`
+      而不是抛异常，所以就算 PATH 里没有也不会崩。
       注意 `media_normalizer` 的归一化输出是 **1920x1080@30**，对 4K60 素材属破坏性降质，不要误触发。
     - **裁剪与 scale 的关系未经验证**：`crop` 是 0~1 归一化、以素材左上角为原点的四角坐标。
       它是否会让 contain 盒子随裁剪比例变化，**本机无样本可查**（758 个真实片段中 0 个带裁剪）。

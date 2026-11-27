@@ -18,7 +18,7 @@ All operations are performed through the `JyProject` instance.
 project = JyProject("Horizontal_Project") 
 
 # 竖屏 (9:16)：必须在初始时指定，否则会有黑边
-project = JyProject("Portrait_Project", width=1080, height=1920)
+project = JyProject("Portrait_Project", width=2160, height=3840)  # 4K 竖屏，不是 1080x1920
 ```
 
 
