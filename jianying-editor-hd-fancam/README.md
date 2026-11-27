@@ -21,7 +21,7 @@
 默认交接目录：
 
 ```
-C:\Users\你的用户名\WorkBuddy\spaces\2026_11_25_08-23-45\handoff
+%USERPROFILE%\WorkBuddy\spaces\<会话目录>\handoff
 ```
 
 ⚠️ SRT 时间戳基于剪映里的原始片段；AE 稳定后若视频时长变了，字幕需重新对齐。
